@@ -39,6 +39,8 @@
 #include "Sample/SampleSimplePoissonDisk.h"
 
 #include "Utility/FileUtil.h"
+#include <iostream>
+#include <fstream>
 
 using namespace Monster;
 
@@ -85,18 +87,17 @@ bool MapsData::loadMap(string &mapFolder, int numMaps, string prefix) {
 
 	vector<string> imageNames;
 	for (int viewID = 0; viewID < numMaps; viewID++) {
-		string suffix = prefix + "-dn14--" + to_string(viewID) + ".png";
+		string suffix = "img" + to_string(viewID+1) + "_50.pgm";
 		string name = mapFolder + suffix;
 		imageNames.push_back(name);
 	}
 
 	int numViews = (int)imageNames.size();
-
 	mMasks.resize(numViews);
 	mDepths.resize(numViews);
 	mNormals.resize(numViews);
 
-	cout << "Loading data";
+	cout << "Loading data"<<endl;
 	for (int viewID = 0; viewID < numViews; viewID++) {
 
 		//cout << "==== Loading view " << viewID << " ====" << endl;
@@ -180,14 +181,32 @@ bool MapsData::parseDepthNormal(
 	vector<vector<double>> &depth,
 	vector<vector<vec3d>> &normal)
 {
-	vector<unsigned short> buffer;
-	int width, height, channel;
+	vector<unsigned char> buffer;
+	int width, height, channel, bitmapPosition;
 	if (!ImageIO::readImage(imageName, buffer, width, height, channel)) return false;
+
+	/*ifstream ifs;
+	ifs.open(imageName, ifstream::in);
+	if (ifs) {
+		string formatType;
+		int maxDepth;
+		ifs >> formatType >> width >> height >> maxDepth;
+		bitmapPosition = ifs.tellg();
+		if (maxDepth == 255) channel = 1;
+		ifs.close();
+	}
+	buffer.resize(height * width * channel);
+	ifs.open(imageName, ifstream::binary);
+	if (ifs) {
+		ifs.seekg(bitmapPosition);
+		for (int i = 0; i < width * height; i++) {
+			ifs.read((char*)&buffer[i],1);
+		}
+	}*/
 
 	mask.assign(height, vector<bool>(width));
 	depth.assign(height, vector<double>(width));
 	normal.assign(height, vector<vec3d>(width));
-
 	for (int pixelID = 0; pixelID < height*width; pixelID++) {
 		int h = pixelID / width;
 		int w = pixelID % width;
@@ -196,8 +215,10 @@ bool MapsData::parseDepthNormal(
 		double d = 1.0;
 		vec3d n(1.0, 1.0, 1.0);
 		if (channel == 1) {
-			unsigned short c = buffer[pixelID];
-			d = c / (double)32768 - 1.0;
+			unsigned char c = buffer[pixelID];
+			//if (c != '\0') c = ((double)256 - 1.0) - c;
+			d = c / ((double)256 - 1.0);
+			//cout << "Buffer: "<<int(c)<<" Depth: "<< d << "\t";
 			n = vec3d(1.0, 1.0, 1.0);
 		} else if (channel == 4) {
 			unsigned short r = buffer[pixelID * 4];

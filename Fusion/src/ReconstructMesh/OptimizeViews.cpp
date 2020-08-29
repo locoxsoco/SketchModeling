@@ -44,27 +44,24 @@
 using namespace Monster;
 
 bool OptimizeViews::init(
-	string &sketchViews,
-	string &sketchFolder,
+	/*string &sketchViews,
+	string &sketchFolder,*/
 	string &mapFolder,
 	string &resultFolder,
 	string &viewPointFile)
 {
-
 	mResultFolder = resultFolder;
-	if (!FileUtil::makedir(mResultFolder)) return false;
+	if (!FileUtil::makedir(mResultFolder)) { cout << "No se pudo crear el folder de resultados"; return false; }
 
 	// load view points
-
 	if (!MeshView::loadViewPoints(viewPointFile, mViewPoints, &mViewGroups)) return false;
-	if (!establishAlignmentOrder()) return false;
-
+	if (!establishAlignmentOrder()) { cout << "No se pudo establecer orden"; return false; }
 	// load view maps
 
 	int numMaps = (int)mViewPoints.size();
-	if (!mViewMaps.loadSketch(sketchViews, sketchFolder)) return false;
+	//if (!mViewMaps.loadSketch(sketchViews, sketchFolder)) return false;
 	if (!mViewMaps.loadMap(mapFolder, numMaps, "pred")) return false;
-	if (!mViewMaps.loadMask(mapFolder, numMaps)) return false;
+	//if (!mViewMaps.loadMask(mapFolder, numMaps)) return false;
 	int mapSize = mViewMaps.mMapSize;
 
 	// load & compute viewing matrices
@@ -159,9 +156,9 @@ bool OptimizeViews::establishAlignmentOrder() {
 		head++;
 	}
 
-	cout << "Fusing order: ";
-	for (int view : mViewOrder) cout << view << " ";
-	cout << endl;
+	//cout << "Fusing order: ";
+	//for (int view : mViewOrder) cout << view << " ";
+	//cout << endl;
 
 	return true;
 }
@@ -233,7 +230,7 @@ bool OptimizeViews::extractPointCloud() {
 	mViewPointCloudsPosition.resize(numViews);
 	mViewPointCloudsNormal.resize(numViews);
 
-	cout << "Extracting";
+	cout << "Extractiing";
 	for (int viewID = 0; viewID < numViews; viewID++) {
 		//cout << "Extracting point cloud for view " << viewID << endl;
 		cout << ".";
@@ -241,10 +238,13 @@ bool OptimizeViews::extractPointCloud() {
 		int numPoints = 0;
 		for (int h = 0; h < mapSize; h++) {
 			for (int w = 0; w < mapSize; w++) {
-				if (mViewMaps.mMasks[viewID][h][w]) numPoints++;
+				if (mViewMaps.mDepths[viewID][h][w]) {
+					//cout << mViewMaps.mDepths[viewID][h][w] << " ";
+					numPoints++; }
 			}
+			//cout << endl;
 		}
-
+		cout << numPoints << endl;
 		Eigen::Matrix3Xd &matP = mViewPointCloudsPosition[viewID];
 		Eigen::Matrix3Xd &matN = mViewPointCloudsNormal[viewID];
 		matP.resize(3, numPoints);
@@ -255,7 +255,7 @@ bool OptimizeViews::extractPointCloud() {
 		int pointID = 0;
 		for (int h = 0; h < mapSize; h++) {
 			for (int w = 0; w < mapSize; w++) {
-				if (!mViewMaps.mMasks[viewID][h][w]) continue;
+				if (!mViewMaps.mDepths[viewID][h][w]) continue;
 
 				double vd = mViewMaps.mDepths[viewID][h][w];
 				vec3d vn = mViewMaps.mNormals[viewID][h][w];
@@ -326,7 +326,7 @@ bool OptimizeViews::alignPointCloud() {
 
 bool OptimizeViews::wrapPointCloud() {
 
-	int numWrapViews = (int)mViewMaps.mSketches.size();
+	int numWrapViews = 3;// (int)mViewMaps.mSketches.size();
 	int numProcessViews = (int)mViewPoints.size();
 	int mapSize = mViewMaps.mMapSize;
 

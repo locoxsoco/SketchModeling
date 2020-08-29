@@ -40,7 +40,6 @@ int error(string s) {
 }
 
 int main(int argc, char** argv) {
-
 	Eigen::initParallel();
 
 	/*
@@ -53,7 +52,7 @@ int main(int argc, char** argv) {
 	if (argc < 7) {
 		cout << "Usage: " << argv[0] << endl;
 		cout << "\t stage(1:fusion; 2:fine-tune)" << endl;
-		cout << "\t sketch_views(F/S/T)" << endl;
+		//cout << "\t sketch_views(F/S/T)" << endl;
 		cout << "\t sketch_folder map_folder" << endl;
 		cout << "\t result_folder view_point_file" << endl;
 		cout << "\t [--skip_optimization] [--symmetrization]" << endl;
@@ -72,18 +71,18 @@ int main(int argc, char** argv) {
 		if (string(argv[k]) == "--symmetrization") bSymmetrization = true;
 	}
 
-	if (!FileUtil::makedir(resultFolder)) return error("");
+	if (!FileUtil::makedir(resultFolder)) { cout << "No se pudo crear el folder de resultados"<< endl; return error("No se pudo crear el folder de resultados"); }
 
 	auto timer = TimerUtility::tic();
 
 	if (stage == 1) {
 		OptimizeViews ov;
-		if (!ov.init(sketchViews, sketchFolder, mapFolder, resultFolder, viewPointFile)) return error("");
-		if (!ov.process(bSkipOptimization, bSymmetrization)) return error("");
+		if (!ov.init(/*sketchViews, sketchFolder,*/ mapFolder, resultFolder, viewPointFile)) { cout << "No se pudo iniciar la optimizacion" << endl; return error("No se pudo iniciar la optimizacion"); }
+		if (!ov.process(bSkipOptimization, bSymmetrization)) { cout << "No se pudo iniciar el procesamiento" << endl; return error("No se pudo iniciar el procesamiento");}
 	} else if (stage == 2) {
 		OptimizeMesh om;
-		if (!om.init(sketchViews, sketchFolder, mapFolder, resultFolder, viewPointFile)) return error("");
-		if (!om.process()) return error("");
+		if (!om.init(sketchViews, sketchFolder, mapFolder, resultFolder, viewPointFile)) return error("No se pudo iniciar la optimizacion plus");
+		if (!om.process()) return error("No se pudo iniciar el procesamiento plus");
 	}
 
 	cout << "Total time: " << TimerUtility::toString(TimerUtility::toc(timer)) << endl;

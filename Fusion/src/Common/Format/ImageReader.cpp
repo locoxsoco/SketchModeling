@@ -54,8 +54,9 @@ bool ImageReader::readImage(string fileName, vector<unsigned short> &image, int 
 }
 
 bool ImageReader::read(string fileName, vector<unsigned char> &image, int &width, int &height, int &channel) {
-
+	cout << "Hola char?" << endl;
 	FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(fileName.c_str());
+	cout << fileName.c_str()<< " fifi: " << fif << endl;
 	if (fif == FIF_UNKNOWN) {
 		FreeImage_GetFIFFromFilename(fileName.c_str());
 	}
@@ -68,22 +69,23 @@ bool ImageReader::read(string fileName, vector<unsigned char> &image, int &width
 		return false;
 	}
 
-	FIBITMAP *bitmap = FreeImage_Load(fif, fileName.c_str());
+	FIBITMAP *bitmap = FreeImage_Load(FIF_PGMRAW, fileName.c_str());
 	if (!bitmap) {
 		cout << "Error: failed to load image data" << endl;
 		return false;
 	}
-	if (!FreeImage_FlipVertical(bitmap)) return false;
+	//if (!FreeImage_FlipVertical(bitmap)) return false;
 
 	width = (int)FreeImage_GetWidth(bitmap);
 	height = (int)FreeImage_GetHeight(bitmap);
 	int bpp = (int)FreeImage_GetBPP(bitmap);
+	cout << width << " " << height << " " << bpp << endl;
 	if (bpp == 8) {
 		channel = 1;
 	} else if (bpp == 24) {
 		channel = 3;
 	} else {
-		cout << "Error: failed to process image with BPP = " << bpp << endl;
+		cout << "Error: failed to process image with BPP char = " << bpp << endl;
 		return false;
 	}
 
@@ -97,7 +99,8 @@ bool ImageReader::read(string fileName, vector<unsigned char> &image, int &width
 		unsigned char *pixel = bits;
 		for (int w = 0; w < width; w++) {
 			if (channel == 1) {
-				image[image_ptr] = pixel[0];
+				image[image_ptr] = (unsigned char) pixel[0];
+				//cout << " im: " << int(image[image_ptr]) << " pi: " << int(pixel[0]);
 				pixel++;
 				image_ptr++;
 			} else {
@@ -116,7 +119,7 @@ bool ImageReader::read(string fileName, vector<unsigned char> &image, int &width
 }
 
 bool ImageReader::read(string fileName, vector<unsigned short> &image, int &width, int &height, int &channel) {
-
+	cout << "Hola short?" << endl;
 	FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(fileName.c_str());
 	if (fif == FIF_UNKNOWN) {
 		FreeImage_GetFIFFromFilename(fileName.c_str());
@@ -140,6 +143,7 @@ bool ImageReader::read(string fileName, vector<unsigned short> &image, int &widt
 	width = (int)FreeImage_GetWidth(bitmap);
 	height = (int)FreeImage_GetHeight(bitmap);
 	int bpp = (int)FreeImage_GetBPP(bitmap);
+	cout << width << " " << height << " " << bpp << endl;
 	if (bpp == 16) {
 		channel = 1;
 	} else if (bpp == 48) {
@@ -147,7 +151,7 @@ bool ImageReader::read(string fileName, vector<unsigned short> &image, int &widt
 	} else if (bpp == 64) {
 		channel = 4;
 	} else {
-		cout << "Error: failed to process image with BPP = " << bpp << endl;
+		cout << "Error: failed to process image with BPP short = " << bpp << endl;
 		return false;
 	}
 

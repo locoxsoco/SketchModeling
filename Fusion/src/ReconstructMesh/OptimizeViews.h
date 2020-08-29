@@ -48,8 +48,8 @@ namespace Monster {
 	public:
 
 		bool init(
-			string &sketchViews,
-			string &sketchFolder,
+			/*string &sketchViews,
+			string &sketchFolder,*/
 			string &mapFolder,
 			string &resultFolder,
 			string &viewPointFile);

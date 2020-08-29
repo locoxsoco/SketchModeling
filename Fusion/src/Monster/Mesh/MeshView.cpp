@@ -64,7 +64,7 @@ bool MeshView::buildViewMatrix(Eigen::Vector3d &inViewPoint, Eigen::Matrix4d &ou
 
 	Eigen::Vector3d E = inViewPoint;    // eye
 	Eigen::Vector3d C(0.0, 0.0, 0.0); // center
-	Eigen::Vector3d U(0.0, 1.0, 0.0); // up
+	Eigen::Vector3d U(0.0, -1.0, 0.0); // up
 	Eigen::Vector3d L = (C - E).normalized();
 	Eigen::Vector3d S = L.cross(U);
 	if (S.norm() == 0) {
